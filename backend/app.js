@@ -15,25 +15,64 @@ const redirectRoutes = require('./routes/redirect');
 
 const app = express();
 
+/* ---------------- MIDDLEWARES ---------------- */
 app.use(helmet());
-app.use(cors({ origin: process.env.CLIENT_URL || '*', credentials: true }));
+
+app.use(cors({
+    origin: process.env.CLIENT_URL || '*',
+    credentials: true
+}));
+
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
+
 app.use(mongoSanitize());
 app.use(xss());
+
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
-app.get('/api/health', (_req, res) => res.json({ status: 'ok', uptime: process.uptime() }));
+/* ---------------- HEALTH CHECK ---------------- */
+app.get('/api/health', (req, res) => {
+    res.json({
+        status: 'ok',
+        uptime: process.uptime(),
+        message: 'Server is running 🚀'
+    });
+});
 
-app.use('/api/', apiLimiter);
+/* ---------------- HOME ROUTE (IMPORTANT FIX) ---------------- */
+app.get('/', (req, res) => {
+    res.json({
+        success: true,
+        message: 'URL Shortener Backend is running 🚀',
+        routes: {
+            health: '/api/health',
+            auth: '/api/auth',
+            url: '/api/url',
+            analytics: '/api/analytics'
+        }
+    });
+});
+
+/* ---------------- API ROUTES ---------------- */
+app.use('/api', apiLimiter);
+
 app.use('/api/auth', authRoutes);
 app.use('/api/url', urlRoutes);
 app.use('/api/analytics', analyticsRoutes);
 
-// Redirect engine must be LAST so it doesn't shadow /api
+/* ---------------- REDIRECT ENGINE (KEEP LAST) ---------------- */
 app.use('/', redirectRoutes);
 
-app.use((req, res) => res.status(404).json({ message: 'Not found' }));
+/* ---------------- 404 HANDLER ---------------- */
+app.use((req, res) => {
+    res.status(404).json({
+        success: false,
+        message: 'Route not found'
+    });
+});
+
+/* ---------------- ERROR HANDLER ---------------- */
 app.use(errorHandler);
 
 module.exports = app;
