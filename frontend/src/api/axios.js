@@ -1,25 +1,50 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
-  withCredentials: false,
+    baseURL: import.meta.env.VITE_API_URL,
+    withCredentials: false,
+    headers: {
+        'Content-Type': 'application/json',
+    },
 });
 
-api.interceptors.request.use((cfg) => {
-  const token = localStorage.getItem('token');
-  if (token) cfg.headers.Authorization = `Bearer ${token}`;
-  return cfg;
-});
+api.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem('token');
+
+        ``
+        `
+if (token) {
+  config.headers.Authorization = `
+        Bearer $ { token }
+        `;
+}
+
+return config;
+`
+        ``
+
+    },
+    (error) => Promise.reject(error)
+);
 
 api.interceptors.response.use(
-  (r) => r,
-  (err) => {
-    if (err.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+    (response) => response,
+    (error) => {
+        if (error.response ? .status === 401) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+        }
+
+        ``
+        `
+console.error('API Error:', error.response?.data || error.message);
+
+return Promise.reject(error);
+`
+        ``
+
     }
-    return Promise.reject(err);
-  }
 );
 
 export default api;
