@@ -12,18 +12,11 @@ api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('token');
 
-        ``
-        `
-if (token) {
-  config.headers.Authorization = `
-        Bearer $ { token }
-        `;
-}
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
 
-return config;
-`
-        ``
-
+        return config;
     },
     (error) => Promise.reject(error)
 );
@@ -36,14 +29,9 @@ api.interceptors.response.use(
             localStorage.removeItem('user');
         }
 
-        ``
-        `
-console.error('API Error:', error.response?.data || error.message);
+        console.error('API Error:', error.response ? .data || error.message);
 
-return Promise.reject(error);
-`
-        ``
-
+        return Promise.reject(error);
     }
 );
 
